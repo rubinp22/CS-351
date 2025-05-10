@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Pointed Star</title>
+  <style>
+    canvas { border: 1px solid black; }
+  </style>
+</head>
+<body>
+  <canvas id="c"></canvas>
+
+  <script id="vertex-shader" type="x-shader/x-vertex">#version 300 es
+    uniform float N;  
+    void main() {
+      if (gl_VertexID == 0) {
+        gl_Position = vec4(0.0, 0.0, 0.0, 1.0);
+      } else {
+        float angle = (float(gl_VertexID - 1) * 2.0 * 3.14159265) / (N - 2.0);
+        float radius = (mod(float(gl_VertexID), 2.0) < 0.5) ? 0.4 : 1.0;
+        vec2 pos = radius * vec2(cos(angle), sin(angle));
+        gl_Position = vec4(pos, 0.0, 1.0);
+      }
+    }
+  </script>
+
+  <script id="fragment-shader" type="x-shader/x-fragment">#version 300 es
+    precision highp float;
+    out vec4 outColor;
+    void main() {
+      outColor = vec4(1, 0, 0, 1);
+    }
+  </script>
+
+  <script type="text/javascript">
+    function main() {
+      const canvas = document.getElementById("c");
+      const gl = canvas.getContext("webgl2");
+      
+      webglUtils.resizeCanvasToDisplaySize(canvas);
+      gl.viewport(0, 0, canvas.width, canvas.height);
+
+      const vertexShaderSource = document.getElementById("vertex-shader").text;
+      const fragmentShaderSource = document.getElementById("fragment-shader").text;
+      const program = webglUtils.createProgramFromSources(gl, [vertexShaderSource, fragmentShaderSource]);
+      
+      const N = 12.0;  
+      const Nloc = gl.getUniformLocation(program, "N");
+      gl.useProgram(program);
+      gl.uniform1f(Nloc, N);
+      
+      gl.clearColor(0, 0, 0, 0);
+      gl.clear(gl.COLOR_BUFFER_BIT);
+      
+      gl.drawArrays(gl.TRIANGLE_FAN, 0, N);
+    }
+    
+    const script = document.createElement('script');
+    script.src = "https://webgl2fundamentals.org/webgl/resources/webgl-utils.js";
+    script.onload = main;
+    document.head.appendChild(script);
+  </script>
+</body>
+</html>
